@@ -14,20 +14,38 @@ if (document.getElementById('userGreeting')) {
     document.getElementById('userGreeting').innerText = userGreeting;
 }
 
-function sendMessage() {
-    const userInput = document.getElementById('userInput').value;
-    const chatMessages = document.getElementById('chatMessages');
+async function sendMessage() {
+    const userInput = document.getElementById("userInput").value;
+    const chatMessages = document.getElementById("chatMessages");
 
-    if (userInput.trim() !== '') {
+    if (userInput.trim() !== "") {
         chatMessages.innerHTML += `<div class="message user">${userInput}</div>`;
-        const botResponse = getBotResponse(userInput);
+
+        // Send message to Flask backend
+        const response = await fetch("http://127.0.0.1:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userInput }),
+        });
+
+        const data = await response.json();
         setTimeout(() => {
-            chatMessages.innerHTML += `<div class="message bot">${botResponse}</div>`;
+            chatMessages.innerHTML += `<div class="message bot">${data.response}</div>`;
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 1000);
-        document.getElementById('userInput').value = '';
+        
+        document.getElementById("userInput").value = "";
     }
 }
+
+function showTypingEffect() {
+    let botMessage = document.createElement("div");
+    botMessage.classList.add("bot-message", "message");
+    botMessage.innerHTML = '<span class="typing"></span>';
+    document.querySelector(".chat-box").appendChild(botMessage);
+}
+
+
 function getBotResponse(input) {
     input = input.toLowerCase();
 
